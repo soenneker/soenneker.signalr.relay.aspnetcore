@@ -4,10 +4,10 @@ using Microsoft.Azure.SignalR;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-/// <summary>Registers the ASP.NET Core server connection to a SignalR relay relay.</summary>
+/// <summary>Registers the ASP.NET Core server connection to a SignalR relay.</summary>
 public static class SignalRRelayExtensions
 {
-    /// <summary>Routes hub negotiation and hub messages through the specified Cloudflare service endpoint.</summary>
+    /// <summary>Routes hub negotiation and hub messages through the specified relay endpoint.</summary>
     /// <param name="builder">The application server's SignalR builder.</param>
     /// <param name="connectionString">A service connection string containing Endpoint and AccessKey.</param>
     public static ISignalRServerBuilder AddSignalRRelay(this ISignalRServerBuilder builder, string connectionString)

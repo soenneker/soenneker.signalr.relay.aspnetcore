@@ -12,7 +12,7 @@ app.MapHub<AppHub>("/hubs/app").RequireAuthorization();
 
 Set the connection string to `Endpoint=https://relay.example.com;AccessKey=<secret>;Version=1.0;`. Use the same secret as the relay's `Relay__AccessKey`. Keep it in server-side configuration. Portal, mobile and other SignalR clients continue to use the mapped application hub URL.
 
-The package reuses the Microsoft.Azure.SignalR 1.34.0 SDK for negotiation, authentication and application-server tunnels. The configured endpoint directs those tunnels to the Cloudflare-hosted relay.
+The package reuses the Microsoft.Azure.SignalR 1.34.0 SDK for negotiation, authentication and application-server tunnels. The configured endpoint directs those tunnels to the relay.
 
 ## Two relay endpoints
 
