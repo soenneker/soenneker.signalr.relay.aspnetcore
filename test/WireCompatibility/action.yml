@@ -1,0 +1,18 @@
+name: SignalR wire compatibility
+description: Exercise negotiation, delivery, management and reconnect against a relay image.
+inputs:
+  image:
+    description: Locally built or published relay image to exercise
+    required: true
+  published-adapter:
+    description: Use the latest stable NuGet adapter instead of the source checkout
+    default: 'false'
+    required: false
+runs:
+  using: composite
+  steps:
+    - shell: pwsh
+      env:
+        RELAY_TEST_IMAGE: ${{ inputs.image }}
+        RELAY_TEST_PUBLISHED: ${{ inputs.published-adapter }}
+      run: '& "$env:GITHUB_ACTION_PATH/run.ps1" -Image $env:RELAY_TEST_IMAGE -PublishedAdapter:($env:RELAY_TEST_PUBLISHED -eq "true")'
