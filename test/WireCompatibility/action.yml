@@ -4,8 +4,9 @@ inputs:
   image:
     description: Locally built or published relay image to exercise
     required: true
-  adapter-version:
-    description: Published baseline adapter version (omit to test the source checkout)
+  published-adapter:
+    description: Use the latest stable NuGet adapter instead of the source checkout
+    default: 'false'
     required: false
 runs:
   using: composite
@@ -13,5 +14,5 @@ runs:
     - shell: pwsh
       env:
         RELAY_TEST_IMAGE: ${{ inputs.image }}
-        RELAY_TEST_ADAPTER: ${{ inputs.adapter-version }}
-      run: '& "$env:GITHUB_ACTION_PATH/run.ps1" -Image $env:RELAY_TEST_IMAGE -AdapterVersion $env:RELAY_TEST_ADAPTER'
+        RELAY_TEST_PUBLISHED: ${{ inputs.published-adapter }}
+      run: '& "$env:GITHUB_ACTION_PATH/run.ps1" -Image $env:RELAY_TEST_IMAGE -PublishedAdapter:($env:RELAY_TEST_PUBLISHED -eq "true")'

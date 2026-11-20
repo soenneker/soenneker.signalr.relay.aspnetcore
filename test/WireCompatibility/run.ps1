@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$Image,
-    [string]$AdapterVersion
+    [switch]$PublishedAdapter
 )
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
@@ -13,12 +13,11 @@ $env:Relay__AccessKey = [Convert]::ToBase64String([Security.Cryptography.RandomN
 docker run --detach --name $container --publish "127.0.0.1:${port}:8080" --env Relay__Endpoint --env Relay__AccessKey $Image
 try {
     $properties = @()
-    if ($AdapterVersion) { $properties += "-p:AdapterVersion=$AdapterVersion" }
-    Write-Host 'Checking the supported SignalR baseline'
+    if ($PublishedAdapter) { $properties += '-p:PublishedAdapter=true' }
+    Write-Host 'Checking the SignalR versions selected by the adapter'
     dotnet run --project $project -c Release @properties -- $container
     Write-Host 'Checking the latest stable Microsoft server, management and client packages'
-    if ($AdapterVersion) { $properties = @('-p:AdapterVersion=*') }
-    dotnet run --project $project -c Release @properties '-p:AzureSignalRVersion=*' '-p:SignalRClientVersion=*' -- $container
+    dotnet run --project $project -c Release @properties '-p:AzureSignalRVersion=*' -- $container
 }
 finally {
     docker rm --force $container | Out-Null
