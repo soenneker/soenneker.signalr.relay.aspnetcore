@@ -1,11 +1,11 @@
-# Soenneker.Cloudflare.SignalR.AspNetCore
+# Soenneker.SignalR.Relay.AspNetCore
 
-ASP.NET Core server registration for Soenneker.Cloudflare.SignalR. The relay holds client connections. Hub classes, authorization and publishers remain in the application.
+ASP.NET Core server registration for Soenneker.SignalR.Relay. The relay holds client connections. Hub classes, authorization and publishers remain in the application.
 
 ```csharp
 builder.Services.AddSignalR()
-    .AddCloudflareSignalR(builder.Configuration.GetConnectionString("CloudflareSignalR")
-        ?? throw new InvalidOperationException("CloudflareSignalR connection string is required."));
+    .AddSignalRRelay(builder.Configuration.GetConnectionString("SignalRRelay")
+        ?? throw new InvalidOperationException("SignalRRelay connection string is required."));
 
 app.MapHub<AppHub>("/hubs/app").RequireAuthorization();
 ```
@@ -17,12 +17,12 @@ The package reuses the Microsoft.Azure.SignalR 1.34.0 SDK for negotiation, authe
 ## Two relay endpoints
 
 ```csharp
-builder.Services.AddSignalR().AddCloudflareSignalR(firstConnectionString, secondConnectionString);
+builder.Services.AddSignalR().AddSignalRRelay(firstConnectionString, secondConnectionString);
 ```
 
 Configure every API instance with the same pair of independently keyed relay origins. The SDK opens tunnels to both and negotiates clients on available endpoints. Clients with automatic reconnect can renegotiate on a surviving endpoint. Restore membership in the hub connection handler and refresh data missed while disconnected.
 
-For session revocation, inject `ICloudflareSignalRConnectionManager` and await `CloseAsync(hub, connectionId, reason, cancellationToken)`. It issues a close on each endpoint. If any endpoint is unreachable, the call reports failure so the application can retry before releasing its connection leases.
+For session revocation, inject `ISignalRRelayConnectionManager` and await `CloseAsync(hub, connectionId, reason, cancellationToken)`. It issues a close on each endpoint. If any endpoint is unreachable, the call reports failure so the application can retry before releasing its connection leases.
 
 Clients opt into same-session WebSocket recovery with `WithStatefulReconnect()` in .NET or `withStatefulReconnect()` in JavaScript. Use automatic reconnect as well for a new session when the original relay has stopped.
 
