@@ -54,6 +54,11 @@ jobs:
       - name: Test
         run: dotnet test --project test/Soenneker.SignalR.Relay.AspNetCore.Tests/Soenneker.SignalR.Relay.AspNetCore.Tests.csproj --configuration Release --no-build --no-restore --verbosity normal
 
+      - name: Verify adapter against the published relay
+        uses: ./test/WireCompatibility
+        with:
+          image: soenneker/signalr-relay:latest
+
       - name: Pack
         shell: bash
         run: |

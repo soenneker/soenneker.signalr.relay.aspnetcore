@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <SignalRClientVersion Condition="'$(SignalRClientVersion)' == ''">11.0.0</SignalRClientVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Condition="'$(AdapterVersion)' == ''" Include="../../src/Soenneker.SignalR.Relay.AspNetCore/Soenneker.SignalR.Relay.AspNetCore.csproj" />
+        <PackageReference Condition="'$(AdapterVersion)' != ''" Include="Soenneker.SignalR.Relay.AspNetCore" Version="$(AdapterVersion)" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="$(SignalRClientVersion)" />
+        <PackageReference Condition="'$(AzureSignalRVersion)' != ''" Include="Microsoft.Azure.SignalR" Version="$(AzureSignalRVersion)" />
+        <PackageReference Condition="'$(AzureSignalRVersion)' != ''" Include="Microsoft.Azure.SignalR.Management" Version="$(AzureSignalRVersion)" />
+    </ItemGroup>
+</Project>

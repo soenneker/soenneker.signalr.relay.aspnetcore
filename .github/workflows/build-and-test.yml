@@ -4,7 +4,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event_name }}
   cancel-in-progress: true
 
 on:
@@ -12,6 +12,8 @@ on:
     branches:
       - main
   workflow_dispatch:
+  schedule:
+    - cron: '27 6 * * *'
 
 env:
   DOTNET_NOLOGO: 'true'
@@ -42,6 +44,11 @@ jobs:
 
       - name: Test
         run: dotnet test --project test/Soenneker.SignalR.Relay.AspNetCore.Tests/Soenneker.SignalR.Relay.AspNetCore.Tests.csproj --configuration Release --no-build --no-restore --verbosity minimal
+
+      - name: Verify adapter against the published relay
+        uses: ./test/WireCompatibility
+        with:
+          image: soenneker/signalr-relay:latest
 
       - name: Pack
         run: dotnet pack src/Soenneker.SignalR.Relay.AspNetCore/Soenneker.SignalR.Relay.AspNetCore.csproj --configuration Release --no-build --no-restore --output . --verbosity minimal

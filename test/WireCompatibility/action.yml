@@ -1,0 +1,17 @@
+name: SignalR wire compatibility
+description: Exercise negotiation, delivery, management and reconnect against a relay image.
+inputs:
+  image:
+    description: Locally built or published relay image to exercise
+    required: true
+  adapter-version:
+    description: Published baseline adapter version (omit to test the source checkout)
+    required: false
+runs:
+  using: composite
+  steps:
+    - shell: pwsh
+      env:
+        RELAY_TEST_IMAGE: ${{ inputs.image }}
+        RELAY_TEST_ADAPTER: ${{ inputs.adapter-version }}
+      run: '& "$env:GITHUB_ACTION_PATH/run.ps1" -Image $env:RELAY_TEST_IMAGE -AdapterVersion $env:RELAY_TEST_ADAPTER'
