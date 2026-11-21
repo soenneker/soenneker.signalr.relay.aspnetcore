@@ -16,6 +16,7 @@ try {
     if ($PublishedAdapter) { $properties += '-p:PublishedAdapter=true' }
     Write-Host 'Checking the SignalR versions selected by the adapter'
     dotnet run --project $project -c Release @properties -- $container
+    if (!$PublishedAdapter) { dotnet run --project $project -c Release --no-build -- --idle }
     Write-Host 'Checking the latest stable Microsoft server, management and client packages'
     dotnet run --project $project -c Release @properties '-p:AzureSignalRVersion=*' -- $container
 }

@@ -12,7 +12,14 @@ string key = Environment.GetEnvironmentVariable("Relay__AccessKey")!;
 string container = args.Single();
 var builder = WebApplication.CreateBuilder();
 builder.WebHost.UseUrls("http://127.0.0.1:0");
-builder.Services.AddSignalR().AddSignalRRelay($"Endpoint={endpoint};AccessKey={key};Version=1.0;");
+string connectionString = $"Endpoint={endpoint};AccessKey={key};Version=1.0;";
+bool idleTest = container == "--idle";
+#if SOURCE_ADAPTER
+if (idleTest)
+    builder.Services.AddSignalR().AddSignalRRelay(connectionString, new SignalRRelayOptions { TunnelIdleTimeout = TimeSpan.FromSeconds(2) });
+else
+#endif
+    builder.Services.AddSignalR().AddSignalRRelay(connectionString);
 await using var api = builder.Build();
 api.MapHub<CompatibilityHub>("/app");
 await api.StartAsync(token);
@@ -26,6 +33,33 @@ var reconnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsA
 client.Reconnected += _ => { reconnected.TrySetResult(); return Task.CompletedTask; };
 var received = Channel.CreateUnbounded<string>();
 client.On<string>("Changed", value => received.Writer.TryWrite(value));
+
+if (idleTest)
+{
+    await WaitForTunnel(ready: false);
+    await client.StartAsync(token);
+    // Stay connected well past both the idle timeout and the negotiate handoff window.
+    await Task.Delay(TimeSpan.FromSeconds(18), token);
+    await CheckDelivery("quiet connected client");
+    await client.StopAsync(token);
+    await WaitForTunnel(ready: false);
+    await Task.Delay(TimeSpan.FromSeconds(3), token);
+    using var idle = await http.GetAsync("/ready/compatibilityhub", token);
+    if ((int)idle.StatusCode != 503) throw new InvalidOperationException("The SDK reopened an idle tunnel.");
+    await using var other = new HubConnectionBuilder().WithUrl(api.Urls.Single() + "/app").Build();
+    await Task.WhenAll(client.StartAsync(token), other.StartAsync(token));
+    await other.StopAsync(token);
+    await CheckDelivery("after concurrent cold negotiations");
+    await client.StopAsync(token);
+    await WaitForTunnel(ready: false);
+    var publisher = api.Services.GetRequiredService<IHubContext<CompatibilityHub>>();
+    await publisher.Clients.All.SendAsync("Changed", "background publish", token);
+    await WaitForTunnel();
+    await WaitForTunnel(ready: false);
+    Console.WriteLine("Verified that a background publish wakes and releases its tunnel.");
+    await api.StopAsync(token);
+    return;
+}
 
 await WaitForTunnel();
 await client.StartAsync(token);
@@ -44,7 +78,7 @@ await CheckDelivery("after reconnect");
 await client.StopAsync(token);
 await api.StopAsync(token);
 
-async Task WaitForTunnel()
+async Task WaitForTunnel(bool ready = true)
 {
     while (true)
     {
@@ -52,7 +86,7 @@ async Task WaitForTunnel()
         try
         {
             using var response = await http.GetAsync("/ready/compatibilityhub", token);
-            if (response.IsSuccessStatusCode)
+            if (ready ? response.IsSuccessStatusCode : (int)response.StatusCode == 503)
                 return;
         }
         catch (HttpRequestException) { /* The container may still be starting. */ }

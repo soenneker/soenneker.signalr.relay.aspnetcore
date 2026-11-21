@@ -44,6 +44,12 @@
         <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.19.2" />
         <PackageReference Include="Microsoft.Azure.SignalR.Management" Version="1.34.0" />
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <!-- The pinned SDK exposes its tunnel transport factory only internally. -->
+        <PackageReference Include="Krafs.Publicizer" Version="2.3.2" PrivateAssets="all" />
+        <Publicize Include="Microsoft.Azure.SignalR:Microsoft.Azure.SignalR.ConnectionFactory" />
+        <Publicize Include="Microsoft.Azure.SignalR.Common" MemberPattern="^Microsoft\.Azure\.SignalR\.(IConnectionFactory|ConnectionFactoryBase|HubServiceEndpoint|IServiceConnection(Container)?|ServiceConnectionStatus|ServiceConnectionContainerBase)$" />
+        <Publicize Include="Microsoft.Azure.SignalR.Common:Microsoft.Azure.SignalR.ServiceConnectionContainerBase.ServiceConnections" />
+        <Publicize Include="Microsoft.Azure.SignalR.Common:Microsoft.Azure.SignalR.ServiceEndpoint.Online" />
         <PackageReference Include="Microsoft.Azure.SignalR" Version="1.34.0" />
     </ItemGroup>
 </Project>
